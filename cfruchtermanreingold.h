@@ -7,7 +7,7 @@
 #include <cmath>
 #include <random>
 #include <fstream>
-#include "flownetwork.hpp"
+#include "cgraph.hpp"
 
 #define TIME_DELTA 0.02
 #define SPRING_CONSTANT 10.0
@@ -18,20 +18,20 @@ class CFruchtermanReingold
 {
 private:
        struct Vertex {
-              QPoint v_coordinates;       //coordinates of the top-left corner of bounding box
+              QPoint v_coordinates;       //coordinates of the top-left corner of the bounding box
               QVector2D v_force;
        };
 
        QVector<Vertex> vgc_vertices;
-       CFlowNetwork* vgc_graph;
+       CGraph* vgc_graph;
        double vgc_area;
-       double vgc_areaWidth;
-       double vgc_areaHeight;
-       double vgc_nodeRadius;
+       double vgc_area_width;
+       double vgc_area_height;
+       double vgc_node_radius;
        double vgc_coeff;
        int vgc_temperature;
-       int vgc_numOfNodes;
-       int vgc_numOfEdges;
+       int vgc_nodes_num;
+       int vgc_edges_num;
        void InitGraph(std::ifstream& in);
        void GenerateRandomCoordinates();
        inline double Distance(const QPoint& first, const QPoint& second) const;
@@ -46,12 +46,12 @@ private:
 public:
        CFruchtermanReingold(const double width, const double height, const double nodeRadius, std::ifstream& in);
        ~CFruchtermanReingold();
-       void getCoordinates(QVector<QPoint>& coordinates);
-       void calculateCoordinates();
-       bool isStable() const;
-       void setSceneWidth(int w);
-       void setSceneHeight(int h);
-       CFlowNetwork* getGraph();
+       void get_coordinates(QVector<QPoint>& coordinates);
+       void calculate_coordinates();
+       bool stable() const;
+       void set_scene_width(int w);
+       void set_scene_height(int h);
+       CGraph* getGraph();
 };
 
 #endif // CFRUCHTERMANREINGOLD_H

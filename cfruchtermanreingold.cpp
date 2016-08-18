@@ -2,14 +2,14 @@
 
 CFruchtermanReingold::CFruchtermanReingold(const double width, const double height, const double nodeRadius, std::ifstream& in)
 {
-       vgc_graph = new CFlowNetwork();
+       vgc_graph = new CGraph();
        vgc_areaHeight = height;
        vgc_areaWidth = width;
        vgc_area = width * height;
        vgc_nodeRadius = nodeRadius;
        vgc_temperature = vgc_areaWidth / 10;
        InitGraph(in);
-       vgc_coeff = std::sqrt(vgc_area / vgc_numOfNodes);
+       vgc_coeff = std::sqrt(vgc_area / vgc_nodes_num);
 }
 
 CFruchtermanReingold::~CFruchtermanReingold() {
@@ -48,12 +48,12 @@ inline void CFruchtermanReingold::Cool() {
        vgc_temperature = std::max(vgc_temperature - 1, 0);
 }
 
-void CFruchtermanReingold::setSceneHeight(int h) {
+void CFruchtermanReingold::set_scene_height(int h) {
        vgc_areaHeight = h;
        vgc_area = vgc_areaWidth * h;
 }
 
-void CFruchtermanReingold::setSceneWidth(int w) {
+void CFruchtermanReingold::set_scene_width(int w) {
        vgc_areaWidth = w;
        vgc_area = vgc_areaHeight * w;
 }
@@ -68,39 +68,41 @@ void CFruchtermanReingold::Reflect(int v) {
 
 void CFruchtermanReingold::CalculateForces() {
        //Coulomb force
-       for(int i = 0; i < vgc_numOfNodes; ++i) {
+       for(int i = 0; i < vgc_nodes_num; ++i) {
               QVector2D force;
-              for(int j = 0; j < vgc_numOfNodes; ++j) {
-                     if(i == j) continue;
+              if(!vgc_graph->vertice_exists(i)) continue;
+              for(int j = 0; j < vgc_nodes_num; ++j) {
+                     if(i == j || !vgc_graph->vertice_exists(j)) continue;
                      force += CoulombForce(i, j);
               }
               vgc_vertices[i].v_force = force;
        }
 
        //Hooke force
-       for(int i = 0; i < vgc_numOfNodes; ++i) {
+       for(int i = 0; i < vgc_nodes_num; ++i) {
               QVector2D force;
-              for(int j = 0; j < vgc_numOfNodes; ++j) {
+              for(int j = 0; j < vgc_nodes_num; ++j) {
                      if(i == j) continue;
-                     else if(vgc_graph->edgeExists(i, j)) force += HookeForce(i, j);
+                     else if(vgc_graph->edge_exists(i, j)) force += HookeForce(i, j);             //TODO: oriented graph?
               }
               vgc_vertices[i].v_force += force;
        }
 
        //Barrier force
-       for(int i = 0; i < vgc_numOfNodes; ++i) Reflect(i);
+       for(int i = 0; i < vgc_nodes_num; ++i) Reflect(i);
 }
 
-void CFruchtermanReingold::calculateCoordinates() {
+void CFruchtermanReingold::calculate_coordinates() {
        CalculateForces();
-       for(int i = 0; i < vgc_numOfNodes; ++i) {
+       for(int i = 0; i < vgc_nodes_num; ++i) {
+              if(!vgc_graph->vertice_exists(i)) continue;
               QVector2D delta = vgc_vertices[i].v_force * NODE_MASS * TIME_DELTA * TIME_DELTA;
               vgc_vertices[i].v_coordinates += delta.toPoint() * std::min(delta.length(), (double)vgc_temperature) / delta.length();
        }
        Cool();
 }
 
-bool CFruchtermanReingold::isStable() const {
+bool CFruchtermanReingold::stable() const {
        return (vgc_temperature == 0 ? true : false);
 }
 
@@ -109,7 +111,7 @@ void CFruchtermanReingold::GenerateRandomCoordinates() {
        std::uniform_int_distribution<int> height_distribution(vgc_nodeRadius, vgc_areaHeight - vgc_nodeRadius);
        std::uniform_int_distribution<int> width_distribution(vgc_nodeRadius, vgc_areaWidth - vgc_nodeRadius);
 
-       for(int i =0; i < vgc_numOfNodes; ++i) {
+       for(int i =0; i < vgc_nodes_num; ++i) {
               vgc_vertices[i].v_coordinates.setX(width_distribution(generator));
               vgc_vertices[i].v_coordinates.setY(height_distribution(generator));
        }
@@ -117,18 +119,18 @@ void CFruchtermanReingold::GenerateRandomCoordinates() {
 
 void CFruchtermanReingold::InitGraph(std::ifstream& in) {
        vgc_graph->read(in);
-       vgc_numOfNodes = vgc_graph->getVerticesAmount();
-       vgc_numOfEdges = vgc_graph->getEdgesAmount();
-       vgc_vertices.resize(vgc_numOfNodes);
+       vgc_nodes_num = vgc_graph->get_vertices_amount();
+       vgc_edges_num = vgc_graph->get_edges_amount();
+       vgc_vertices.resize(vgc_nodes_num);
        GenerateRandomCoordinates();
 }
 
-void CFruchtermanReingold::getCoordinates(QVector<QPoint>& coordinates)  {
+void CFruchtermanReingold::get_coordinates(QVector<QPoint>& coordinates)  {
        coordinates.clear();
        for(int i= 0; i < vgc_vertices.size(); ++i)
               coordinates.push_back(vgc_vertices[i].v_coordinates);
 }
 
-CFlowNetwork* CFruchtermanReingold::getGraph() {
+CGraph* CFruchtermanReingold::get_graph() {
        return vgc_graph;
 }
