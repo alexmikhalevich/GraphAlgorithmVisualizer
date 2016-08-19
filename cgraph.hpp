@@ -10,7 +10,8 @@
 enum EState {
        NEW,
        PROCESSING,
-       VISITED
+       VISITED,
+       REMOVED
 };
 
 class CGraph {
@@ -42,8 +43,14 @@ private:
               Edge() = delete;
               void set_state(EState state) { m_state = state; }
               void set_weight(int w) { m_weight = w; }
-              void remove() { m_is_visible = false; }
-              void reborn() { m_is_visible = true; }
+              void remove() {
+                     m_is_visible = false;
+                     m_state = EState::REMOVED;
+              }
+              void reborn() {
+                     m_is_visible = true;
+                     m_state = EState::NEW;
+              }
               int get_dest_id() const { return m_destination->get_id(); }
               int get_source_id() const { return m_source->get_id(); }
               int get_id() const { return m_id; }
@@ -72,11 +79,13 @@ private:
               void set_state(EState state) { m_state = state; }
               void remove() {
                      m_is_visible = false;
+                     m_state = EState::REMOVED;
                      for(Edge* e : m_inEdges) e->remove();
                      for(Edge* e : m_outEdges) e->remove();
               }
               void reborn() {
                      m_is_visible = true;
+                     m_state = EState::NEW;
                      for(Edge* e : m_inEdges) e->reborn();
                      for(Edge* e : m_outEdges) e->reborn();
               }
@@ -147,6 +156,8 @@ public:
               m_edges[e]->set_state(state);
               m_steps.push_back(StepSlice(v, state, false));
        }
+       int get_edge_source_id(int e) const { return m_edges[e]->get_source_id(); }
+       int get_edge_dest_id(int e) const { return m_edges[e]->get_dest_id(); }
        StepSlice next_step() {
               if(m_algo_step + 1 == m_steps.size()) throw new ExLastStep;
               ++m_algo_step;
