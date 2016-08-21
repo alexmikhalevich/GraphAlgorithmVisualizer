@@ -128,7 +128,7 @@ void CFruchtermanReingold::InitGraph(std::ifstream& in) {
 void CFruchtermanReingold::get_coordinates(QVector<QPoint>& coordinates)  {
        coordinates.clear();
        for(int i= 0; i < vgc_vertices.size(); ++i)
-              coordinates.push_back(vgc_vertices[i].v_coordinates);
+              if(vgc_graph->vertice_exists(i)) coordinates.push_back(vgc_vertices[i].v_coordinates);
 }
 
 CGraph* CFruchtermanReingold::get_graph() {
