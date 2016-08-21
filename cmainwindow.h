@@ -6,9 +6,11 @@
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
 #include <QFileDialog>
+#include <QStringList>
 #include <fstream>
 #include "cgraph.hpp"
 #include "cfruchtermanreingold.h"
+#include "cprocessor.h"
 
 #define NODE_RADIUS 15.0
 
@@ -27,14 +29,16 @@ public:
        ~CMainWindow();
 
 private:
-       Ui::CMainWindow *ui;
+       Ui::CMainWindow* ui;
        QGraphicsScene* m_scene;
        QTimer m_timer;
        CFruchtermanReingold* m_fruchtermanReingold;
        QVector<QGraphicsEllipseItem*> m_verticesItems;
        QVector<QGraphicsLineItem*> m_edgesItems;
        QVector<QPoint> m_coordinates;
+       CProcessor m_algorithm_processor;
        CGraph* m_graph;
+       IAlgorithm* m_algorithm;
        bool m_isPaused;
        bool m_positioned;
        void ChangeState(EState st, int id, bool vertex);

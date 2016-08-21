@@ -19,6 +19,8 @@ CMainWindow::CMainWindow(QWidget* parent) :
        connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(exit_program()));
        connect(ui->actionOpen_graph, SIGNAL(triggered()), this, SLOT(open_graph()));
        connect(ui->actionAbout_program, SIGNAL(triggered()), this, SLOT(about_program()));
+       connect(ui->actionLoad_algorithm, SIGNAL(triggered()), this, SLOT(load_algorithm()));
+       connect(ui->actionLoad, SIGNAL(triggered()), this, SLOT(load_algorithm()));
        connect(&m_timer, SIGNAL(timeout()), this, SLOT(redraw()));
 
        m_scene = new QGraphicsScene(this);
@@ -49,6 +51,8 @@ void CMainWindow::redraw() {
               if(m_fruchtermanReingold->isStable()) {
                      m_positioned = true;
                      m_timer.stop();
+                     ui->statusBar->showMessage("Drawing done");
+                     ui->centralWidget->setCursor(Qt::ArrowCursor);
               }
               m_fruchtermanReingold->calculateCoordinates();
               m_fruchtermanReingold->getCoordinates(m_coordinates);
@@ -176,9 +180,23 @@ void CMainWindow::open_graph() {
        for(QGraphicsLineItem* item : m_edgesItems) if(item) delete item;
        if(m_fruchtermanReingold) delete m_fruchtermanReingold;
        QString filename = QFileDialog::getOpenFileName(this, "Open graph", QString(), tr("Graph data(*.dat, *.txt)"));
+       ui->centralWidget->setCursor(Qt::WaitCursor);
+       ui->statusBar->showMessage("Drawing your graph...");
        Init(filename);
 }
 
 void CMainWindow::exit_program() {
        exit(0);
+}
+
+void CMainWindow::load_algorithm() {
+       QStringList filenames = QFileDialog::getOpenFileNames(this, "Load algorithm", QString(), tr("C++ source code(*.cpp *.h *.hpp)"));
+       ui->centralWidget->setCursor(Qt::WaitCursor);
+       ui->statusBar->showMessage("Compiling your source...");
+       m_algorithm_processor.compile(filenames);
+       ui->statusBar->showMessage("Applying your algorithm...");
+       m_algorithm = m_algorithm_processor.load_algorithm();
+       int time = m_algorithm_processor.apply_algorithm(m_graph, m_algorithm);
+       ui->statusBar->showMessage("Done, working time: " +QString::number(time) + " ms", 5000);
+       ui->centralWidget->setCursor(Qt::ArrowCursor);
 }
