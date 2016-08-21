@@ -3,12 +3,12 @@
 
 #include <vector>
 #include <istream>
+#include "cgraph.hpp"
 
 template<class CompareFunction>
 class IAlgorithm {
 public:
-       virtual void apply_algorithm(const std::vector<std::vector<int> >& edges,
-                                   const std::size_t edges_size, CompareFunction func, std::istream& stream) = 0;             //TODO: probably all function params are unnecessary
+       virtual void apply_algorithm(CGraph* graph) = 0;
        virtual void step() = 0;
        virtual ~IAlgorithm() {}
 };
