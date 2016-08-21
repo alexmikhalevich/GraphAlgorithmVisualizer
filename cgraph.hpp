@@ -4,7 +4,6 @@
 #include <iostream>
 #include <assert.h>
 #include <vector>
-#include "ialgorithm.h"
 #include "cexception.hpp"
 
 enum EState {
@@ -37,8 +36,6 @@ private:
               bool m_is_visible;
        public:
               Edge(Vertex* s, Vertex* d) : m_source(s), m_destination(d), m_weight(0), m_id(0), m_state(EState::NEW) {}
-              Edge(Vertex* s, Vertex* d, int id) : m_source(s), m_destination(d), m_weight(0), m_id(id), m_state(EState::NEW) {}
-              Edge(Vertex* s, Vertex* d, int w) : m_source(s), m_destination(d), m_weight(w), m_id(0), m_state(EState::NEW) {}
               Edge(Vertex* s, Vertex* d, int w, int id) : m_source(s), m_destination(d), m_weight(w), m_id(id), m_state(EState::NEW) {}
               Edge() = delete;
               void set_state(EState state) { m_state = state; }
@@ -113,16 +110,12 @@ public:
               int m_id;
               EState m_state;
               bool m_is_vertex;
-              StepSlice(int id, int st, bool isv) : m_id(id), m_state(st), m_is_vertex(isv) {}
+              StepSlice(int id, EState st, bool isv) : m_id(id), m_state(st), m_is_vertex(isv) {}
               StepSlice() = delete;
        };
-       template<class CompareFunction>
-       void apply_algorithm(IAlgorithm<CompareFunction>* algorithm, CompareFunction func, std::istream& stream) {
-              algorithm->apply_algorithm(m_edges, m_edges.size(), func, stream);
-       }
        std::size_t get_vertices_amount() const { return m_vertices.size(); }
        std::size_t get_edges_amount() const { return m_edges.size(); }
-       bool vertice_exists(int v) const { return v < m_vertices.size() && m_vertices[v]->visible(); }
+       bool vertice_exists(int v) const { return v < (int)m_vertices.size() && m_vertices[v]->visible(); }
        bool edge_exists(int i, int j) const {
               if(m_oriented)
                      return (m_vertices[i]->out_edge_exists(j) && m_vertices[j]->in_edge_exists(i));
@@ -154,12 +147,12 @@ public:
        }
        void set_edge_state(int e, EState state) {
               m_edges[e]->set_state(state);
-              m_steps.push_back(StepSlice(v, state, false));
+              m_steps.push_back(StepSlice(e, state, false));
        }
        int get_edge_source_id(int e) const { return m_edges[e]->get_source_id(); }
        int get_edge_dest_id(int e) const { return m_edges[e]->get_dest_id(); }
        StepSlice next_step() {
-              if(m_algo_step + 1 == m_steps.size()) throw new ExLastStep;
+              if(m_algo_step + 1 == (int)m_steps.size()) throw new ExLastStep;
               ++m_algo_step;
               return m_steps[m_algo_step];
        }
@@ -170,14 +163,14 @@ public:
        }
        void add_vertex(int id) {
               if(id < 0) throw new ExInvalidId;
-              if(id >= m_vertices.size()) m_vertices.push_back(new Vertex(id));
+              if(id >= (int)m_vertices.size()) m_vertices.push_back(new Vertex(id));
               else if(!m_vertices[id]->visible()) m_vertices[id]->reborn();
               else throw new ExExistingVertex;
        }
        void add_edge(int id, int source_id, int dest_id, int weight = 0) {
               if(id < 0) throw new ExInvalidId;
-              if(source_id >= m_vertices.size() || dest_id >= m_vertices.size()) throw new ExInvalidVertex;
-              if(id >= m_edges.size()) {
+              if(source_id >= (int)m_vertices.size() || dest_id >= (int)m_vertices.size()) throw new ExInvalidVertex;
+              if(id >= (int)m_edges.size()) {
                      Edge* e = new Edge(m_vertices[source_id], m_vertices[dest_id], weight, id);
                      m_edges.push_back(e);
                      m_vertices[source_id]->add_out_edge(e);
