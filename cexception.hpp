@@ -40,3 +40,18 @@ class ExInvalidVertex : IException {
 public:
        std::string what() { return "No such vertex."; }
 };
+
+class ExCastingFailed : IException {
+public:
+       std::string what() { return "*_cast() failed."; }
+};
+
+class ExDirCreationFailed : IException {
+public:
+       std::string what() { return "Unable to create directory."; }
+};
+
+class ExOpenFileFailed : IException {
+public:
+       std::string what() { return "Unable to open file."; }
+};
